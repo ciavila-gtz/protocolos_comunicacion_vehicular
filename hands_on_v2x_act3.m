@@ -74,7 +74,7 @@ title('Path Loss vs Distance (first segment up to perpendicular position)');
 grid on;
 
 % Close-In Model
-f = 28e6; % Frequency of the carrier
+f = 28e9; % Frequency of the carrier
 c = 3e8;  % velocidad de la luz (m/s)
 FSPL_1m = 20*log10(4*pi*f/c);  % dB
 
