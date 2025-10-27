@@ -145,12 +145,12 @@ sigma_res = std(residuals);
 fprintf('Media de residuales (μ) = %.3f dB\n', mu_res);
 fprintf('Desviación estándar (σ_SF) = %.3f dB\n', sigma_res);
 
-% --- Plot histogram and gaussian curve 
+% --- Plot histogram and Graficar histograma y curva gaussiana ---
 figure('Name','Shadow Fading Histogram','NumberTitle','off');
 histogram(residuals, 20, 'Normalization','pdf','FaceAlpha',0.6);
 hold on;
 
-% Adjust and plot gaussian curve
+% Ajustar y graficar curva gaussiana
 x_fit = linspace(min(residuals), max(residuals), 200);
 pdf_fit = normpdf(x_fit, mu_res, sigma_res);
 plot(x_fit, pdf_fit, 'r-', 'LineWidth', 1.8);
@@ -160,7 +160,7 @@ title('Shadow Fading (Histogram + Gaussian Fit)');
 legend('Datos experimentales','Ajuste Gaussiano','Location','best');
 grid on;
 
-% --- Validate with QQ-Plot ---
+% --- Verificar con QQ-Plot ---
 figure('Name','QQ-plot Residuales','NumberTitle','off');
 qqplot(residuals);
 title('QQ-Plot de Residuales vs Distribución Normal');
