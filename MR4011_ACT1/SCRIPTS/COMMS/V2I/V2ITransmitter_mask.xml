@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Mask SelfModifiable="on">
+  <Type>V2ITransmitter</Type>
+  <SourceCheckSum>1B41C38388F32C06770A1BE8341FEA27</SourceCheckSum>
+  <Display IconOpaque="transparent" RunInitForIconRedraw="off">disp(&apos;V2ITransmitter&apos;);
+port_label(&apos;input&apos;,1,&apos;trafficLightStates&apos;);
+port_label(&apos;output&apos;,1,&apos;spat&apos;);
+</Display>
+  <Description>HelperV2ITransmitter Models a V2I Transmitter.</Description>
+  <Initialization>matlab.system.MLSysBlockIconAndPortLabelsInfo.updateMLSysBlockIconAndPortLabels(gcbh)</Initialization>
+  <MaskParameter Name="RegionInfo" Type="edit" Tunable="off">
+    <Prompt>RegionInfo:</Prompt>
+    <Value>regionInfo</Value>
+  </MaskParameter>
+  <MaskParameter Name="OutputStruct" Type="edit" Tunable="off">
+    <Prompt>Ouput Struct:</Prompt>
+    <Value>Simulink.Bus.createMATLABStruct(&apos;BusSPAT&apos;)</Value>
+  </MaskParameter>
+  <MaskParameter Name="SimulateUsing" Type="popup" Evaluate="off" Tunable="off" NeverSave="on" Internal="on" ReadOnly="on" Enabled="off" Visible="off">
+    <Prompt>SystemBlock:MATLABSystem:SimulateUsing</Prompt>
+    <Value>Interpreted execution</Value>
+    <TypeOptions>
+      <Option>SystemBlock:MATLABSystem:SimulateUsingCodeGeneration</Option>
+      <Option>SystemBlock:MATLABSystem:SimulateUsingInterpretedExecution</Option>
+    </TypeOptions>
+  </MaskParameter>
+  <DialogControl Type="Group" Name="DescGroupVar">
+    <Prompt>V2ITransmitter</Prompt>
+    <DialogControl Type="Text" Name="DescTextVar">
+      <Prompt>%&lt;MaskDescription&gt;</Prompt>
+    </DialogControl>
+    <DialogControl Type="Hyperlink" Name="SourceCodeLink">
+      <Prompt>Source code</Prompt>
+      <Callback>edit(&apos;V2ITransmitter&apos;);</Callback>
+    </DialogControl>
+  </DialogControl>
+  <DialogControl Type="Group" Name="SectionGroup0_Section1">
+    <Prompt>Simulink:studio:ToolBarParametersMenu</Prompt>
+    <ControlOptions AlignPrompts="on"/>
+    <DialogControl Type="Edit" Name="RegionInfo">
+      <Prompt>RegionInfo:</Prompt>
+      <ControlOptions PromptLocation="left"/>
+    </DialogControl>
+    <DialogControl Type="Edit" Name="OutputStruct">
+      <Prompt>Ouput Struct:</Prompt>
+      <ControlOptions PromptLocation="left"/>
+    </DialogControl>
+  </DialogControl>
+  <DialogControl Type="Panel" Name="SectionGroup0_Section2">
+    <ControlOptions Visible="off" AlignPrompts="on"/>
+    <DialogControl Type="Popup" Name="SimulateUsing">
+      <Prompt>Simulate using:</Prompt>
+      <Tooltip>SystemBlock:MATLABSystem:SimulateUsingDescription</Tooltip>
+      <ControlOptions PromptLocation="left"/>
+    </DialogControl>
+  </DialogControl>
+</Mask>

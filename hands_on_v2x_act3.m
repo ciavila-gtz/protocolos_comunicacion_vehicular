@@ -1,0 +1,140 @@
+clear
+% Load data
+data = load("G:\My Drive\Colab Notebooks\MNA\MR4011 - Protocolos de Comunicación Vehicular\Actividad 1\ACT1\measurementV2I.mat")
+
+% Access the arrays from the loaded structure
+%frequency = data.freq_Hz
+time = data.time_ms
+rx_pow = data.RX_pow
+
+% 1 Maximum instantaneous power received
+% Define the distance as v = d / t, d = v * t
+v = 8.33                % constant speed of 8.33 m/s
+time_s = time / 1000    % Convert from ms to s
+distance_m = time_s * v % Calculate distance in m
+
+% Extract the maximum power for each time instance (dBm)
+Pr_max = max(rx_pow, [], 2);
+
+% Extract the max Power across the instanteanous power vector
+[max_power, idx_maxPr] = max(Pr_max);      % global maximum and index
+max_distance = distance_m(idx_maxPr);      % distance at which it occurs
+
+figure;
+plot(distance_m, Pr_max, '-o','LineWidth',1.2,'MarkerSize',4);
+hold on;
+
+% Add the maximum point to the same plot
+plot(max_distance, max_power, 'rp', 'MarkerFaceColor', 'r', 'MarkerSize', 10); % red pentagon marker
+text(max_distance, max_power + 2, sprintf('Max: %.2f dBm at %.2f m', max_power, max_distance), ...
+    'Color', 'r', 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
+
+xlabel('Distance traveled (m)');
+ylabel('Received power (dBm)');
+title('Instantaneous received power vs distance');
+grid on;
+
+% 2 Path Loss
+TX_POW = 57.0;                  % 57 dbm
+v = 30000 / (60*60);            % 30,000 m / (60 min / hr)(60 sec / min) = 8.33 m/s
+perpendicular_dist_m = 13;      % Perpendicular distance from Rx to Vehicle in meters
+Pr_max = max(rx_pow, [], 2);    % Get Maximum Power across the time
+time_s = time / 1000;   % Convert from ms to s
+distance_m = time_s * v;
+
+% Find the index with the maximum power (and max Rx power)
+[max_power, idx_maxPr] = max(Pr_max);
+
+% Calculate the distance from 1 to the idx the maximum power
+distance_segment = distance_m(1:idx_maxPr);
+% Get the radial distance as
+% sqtr((X0 - Xmax_pow)^2 + 13^2)
+radial_distance = sqrt((distance_segment - distance_m(idx_maxPr)).^2 + perpendicular_dist_m^2);
+
+% Extract the Power from 1 to the idx with maximum poer
+Pr_segment = Pr_max(1:idx_maxPr);
+
+% === Calcular Path Loss ===
+PathLoss = TX_POW - Pr_segment;
+
+[min_r, idx_min_r] = min(radial_distance);  % Get the smallest radial distance
+Pr_at_min_r = Pr_segment(idx_min_r);        % Get the power at the smallest radial distance
+
+figure;
+plot(radial_distance, PathLoss, 'LineWidth', 1.5);
+hold on;
+plot(min_r, TX_POW - Pr_at_min_r, 'rp', 'MarkerFaceColor', 'r', 'MarkerSize', 10); % red pentagon marker
+text(min_r + 1, TX_POW - Pr_at_min_r, ...
+     sprintf('Min dist = %.2f m\nP_r = %.2f dBm', min_r, TX_POW - Pr_at_min_r), ...
+     'Color', 'r', 'FontSize', 10, 'FontWeight', 'bold');
+
+xlabel('Radial Distance (m)');
+ylabel('Path Loss (dB)');
+title('Path Loss vs Distance (first segment up to perpendicular position)');
+grid on;
+
+% Close-In Model
+f = 28e6; % Frequency of the carrier
+c = 3e8;  % velocidad de la luz (m/s)
+FSPL_1m = 20*log10(4*pi*f/c);  % dB
+
+% Get radial distance and Path Loss vectors with valid ranges to inject
+% into the log10
+d = radial_distance(:);
+PL = PathLoss(:);
+valid = isfinite(d) & isfinite(PL) & (d>0);  % descartar d<=0 por log10
+d = d(valid);
+PL = PL(valid);
+
+% Define X and Y
+x = 10*log10(d);              % 10 log10(d_i)
+y = PL - FSPL_1m;             % y_i = PL_i - FSPL(f,1m)
+
+% Estimator without the interceptor
+n_hat = sum(x .* y) / sum(x.^2);
+
+% Residuales y sigma SF
+residuals = y - n_hat * x;
+N = length(residuals);
+sigma_SF = sqrt(sum(residuals.^2) / (N - 1));
+
+% R^2 for regression (no interceptor)
+SS_res = sum(residuals.^2);
+SS_tot = sum(y.^2);
+R2_no_intercept = 1 - SS_res / SS_tot;
+
+% Alternative regression with interceptor (comparison purpose)
+p = polyfit(x, y, 1);  % p(1) = slope (n_with_intercept), p(2)=intercept a
+n_with_intercept = p(1);
+a_est = p(2);
+res_intercept = y - (n_with_intercept * x + a_est);
+sigma_SF_intercept = sqrt(sum(res_intercept.^2) / (N - 2)); % DOF N-2
+
+% Print results
+fprintf('FSPL(1m) = %.3f dB\n', FSPL_1m);
+fprintf('Estimated PLE (n) [CI anchor, no intercept] = %.4f\n', n_hat);
+fprintf('Estimated sigma_SF = %.3f dB (N = %d)\n', sigma_SF, N);
+fprintf('R^2 (no-intercept) = %.4f\n\n', R2_no_intercept);
+
+fprintf('Comparison -- regression with intercept:\n');
+fprintf('PLE (slope) = %.4f, intercept a = %.4f dB\n', n_with_intercept, a_est);
+fprintf('sigma_SF (with intercept, dof N-2) = %.4f dB\n', sigma_SF_intercept);
+
+% Plots
+figure;
+subplot(2,1,1);
+scatter(x, y, 30, 'filled'); hold on;
+xx = linspace(min(x), max(x), 100);
+plot(xx, n_hat*xx, 'r-', 'LineWidth', 1.8); % CI no-intercept fit
+plot(xx, n_with_intercept*xx + a_est, 'g--', 'LineWidth', 1.2); % with intercept
+legend('Datos (y vs x)','Fit CI (no intercept)','Fit con intercepto','Location','best');
+xlabel('10 log_{10}(d)'); ylabel('PL - FSPL(1m) (dB)');
+title('Ajuste del modelo CI: y = 10 n log10(d)');
+
+subplot(2,1,2);
+histogram(residuals, 20);
+xlabel('Residuales r_i (dB)'); ylabel('Frecuencia');
+title(sprintf('Residuales (sigma = %.3f dB)', sigma_SF));
+grid on;
+
+
