@@ -166,3 +166,94 @@ qqplot(residuals);
 title('QQ-Plot de Residuales vs Distribución Normal');
 grid on;
 
+
+% Viable range of communications
+Pt = 20;    % dBm
+FSPL_1m;    % dB
+n = n_hat;  % PLE
+sigma_SF;   % dB
+
+fprintf('\n\n------- Rango Viable de Comunicacion -------\n\n')
+fprintf('Potencia de Transmision (Pt) = %.3f dBm\nFSPL(1m) = %.3f dB\n', Pt, FSPL_1m);
+fprintf('PLE (n) = %.3f\nSigma SF (σ_SF) = %.3f dB\n', n_hat, sigma_SF);
+
+% Distance vector from 1m to 1km 
+d = linspace(1,1000,2000);   % From 1 m to 1000 m using 2000 samples
+
+% Average received power (CI model)
+Pr_mean = Pt - (FSPL_1m + 10 * n * log10(d));
+
+% Bands +/- sigma
+Pr_upper = Pr_mean + sigma_SF;
+Pr_lower = Pr_mean - sigma_SF;
+
+% Values of interest
+d_points = [1, 10, 100, 200, 1000];
+Pr_points = Pt - (FSPL_1m + 10 * n * log10(d_points));
+Pr_points_upper = Pr_points + sigma_SF;
+Pr_points_lower = Pr_points - sigma_SF;
+
+% Show table in commandl ine
+fprintf(' d (m)   Pr_mean (dBm)   Pr+sigma (dBm)   Pr-sigma (dBm)\n');
+for k = 1:length(d_points)
+    fprintf('%5d   %10.3f       %10.3f       %10.3f\n', d_points(k), ...
+        Pr_points(k), Pr_points_upper(k), Pr_points_lower(k));
+end
+
+% Get Plot
+figure('Name','Pr(d) - Modelo CI');
+plot(d, Pr_mean, 'b-', 'LineWidth', 1.8); hold on;
+plot(d, Pr_upper, 'r--', 'LineWidth', 1);
+plot(d, Pr_lower, 'r--', 'LineWidth', 1);
+% Get the value at 200 m
+xline(200, 'k:', 'LineWidth', 1.4, 'Label', '200 m', 'LabelHorizontalAlignment','left');
+% Get Received Power at 200m Pr(200)
+text(210, Pt - (FSPL_1m + 10*n*log10(200)), sprintf('Pr(200)= %.3f dBm', Pt - (FSPL_1m + 10*n*log10(200))),'FontWeight', 'bold');
+xlabel('Distancia d (m)');
+ylabel('Potencia recibida P_r (dBm)');
+title('P_r(d) (media) y bandas \pm\sigma_{SF} (modelo CI)');
+legend('P_r media','P_r + \sigma','P_r - \sigma','Location','best');
+grid on;
+set(gca,'FontSize',11);
+
+% ------ Noise level ------------------
+Noise_dbm = -105.332 % dBm
+distance_at_noise = 10^((Pt - FSPL_1m - Noise_dbm) / (10 * n));
+fprintf('distance_at_noise = %.3f', distance_at_noise)
+
+% Get Plot (combining both P(200m) and distance at Noise)
+figure('Name','Pr(d) - Modelo CI');
+plot(d, Pr_mean, 'b-', 'LineWidth', 1.8); hold on;
+plot(d, Pr_upper, 'r--', 'LineWidth', 1);
+plot(d, Pr_lower, 'r--', 'LineWidth', 1);
+% Get the value at 200 m
+xline(200, 'k:', 'LineWidth', 1.4, 'Label', '200 m', 'LabelHorizontalAlignment','left');
+% Get Received Power at 200m Pr(200)
+text(210, Pt - (FSPL_1m + 10*n*log10(200)), sprintf('Pr(200)= %.3f dBm', Pt - (FSPL_1m + 10*n*log10(200))),'FontWeight', 'bold');
+% Get Distance below the Noise level
+xline(distance_at_noise, 'k:', 'LineWidth', 1.4, 'Label', 'Distance below Noise', 'LabelHorizontalAlignment','left');
+text(distance_at_noise + 10, -115, sprintf('d(noise)= %.3f m', distance_at_noise),'FontWeight', 'bold');
+yline(Noise_dbm, 'k--', 'LineWidth', 1.4, 'Label', 'Noise value', 'LabelVerticalAlignment','top');
+text(10, Noise_dbm - 1, sprintf('Pr(noise)= %.3f m', Noise_dbm),'FontWeight', 'bold');
+xlabel('Distancia d (m)');
+ylabel('Potencia recibida P_r (dBm)');
+title('P_r(d) (media) y bandas \pm\sigma_{SF} (modelo CI)');
+legend('P_r media','P_r + \sigma','P_r - \sigma','Location','best');
+grid on;
+set(gca,'FontSize',11);
+
+% Plot for distance below the noise only
+%figure('Name','Pr(d) - Modelo CI');
+%plot(d, Pr_mean, 'b-', 'LineWidth', 1.8); hold on;
+% Get Distance below the Noise level
+%xline(distance_at_noise, 'k:', 'LineWidth', 1.4, 'Label', 'Distance below Noise', 'LabelHorizontalAlignment','left');
+%text(distance_at_noise + 10, -115, sprintf('d(noise)= %.3f m', distance_at_noise),'FontWeight', 'bold');
+%yline(Noise_dbm, 'k--', 'LineWidth', 1.4, 'Label', 'Noise value', 'LabelVerticalAlignment','top');
+%text(10, Noise_dbm - 1, sprintf('Pr(noise)= %.3f m', Noise_dbm),'FontWeight', 'bold');
+%xlabel('Distancia d (m)');
+%ylabel('Potencia recibida P_r (dBm)');
+%title('P_r(d) (media) (modelo CI)');
+%legend('P_r media','Location','best');
+%grid on;
+%set(gca,'FontSize',11);
+
