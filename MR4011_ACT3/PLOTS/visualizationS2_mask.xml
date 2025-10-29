@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Mask SelfModifiable="on">
+  <Type>visualizationS2</Type>
+  <SourceCheckSum>A56D4A4D869D86CD1704D1421AF93ABD</SourceCheckSum>
+  <Display IconOpaque="transparent" RunInitForIconRedraw="off">disp(&apos;visualizationS2&apos;);
+port_label(&apos;input&apos;,1,&apos;targetPoses&apos;);
+port_label(&apos;input&apos;,2,&apos;egoInfo&apos;);
+port_label(&apos;input&apos;,3,&apos;trafficLightSensorStates&apos;);
+port_label(&apos;input&apos;,4,&apos;mioIndex&apos;);
+port_label(&apos;input&apos;,5,&apos;posSelector&apos;);
+port_label(&apos;input&apos;,6,&apos;tracks&apos;);
+</Display>
+  <Description>HelperTrafficLightNegotiationVisualization Visualization helper class.</Description>
+  <Initialization>matlab.system.MLSysBlockIconAndPortLabelsInfo.updateMLSysBlockIconAndPortLabels(gcbh)</Initialization>
+  <MaskParameter Name="range" Type="edit">
+    <Prompt>V2X Range:</Prompt>
+    <Value>V2XRange</Value>
+  </MaskParameter>
+  <MaskParameter Name="SF_std" Type="edit">
+    <Prompt>Shadow Fading std:</Prompt>
+    <Value>SF_std</Value>
+  </MaskParameter>
+  <MaskParameter Name="TrafficLightDisp" Type="checkbox" Evaluate="off" Tunable="off">
+    <Prompt>Enable Traffic Light Visualization</Prompt>
+    <Value>on</Value>
+  </MaskParameter>
+  <MaskParameter Name="EnableVisualization" Type="checkbox" Evaluate="off" Tunable="off">
+    <Prompt>Enable Visualization</Prompt>
+    <Value>on</Value>
+  </MaskParameter>
+  <MaskParameter Name="SimulateUsing" Type="popup" Evaluate="off" Tunable="off" NeverSave="on" Internal="on" ReadOnly="on" Enabled="off" Visible="off">
+    <Prompt>SystemBlock:MATLABSystem:SimulateUsing</Prompt>
+    <Value>Interpreted execution</Value>
+    <TypeOptions>
+      <Option>SystemBlock:MATLABSystem:SimulateUsingCodeGeneration</Option>
+      <Option>SystemBlock:MATLABSystem:SimulateUsingInterpretedExecution</Option>
+    </TypeOptions>
+  </MaskParameter>
+  <DialogControl Type="Group" Name="DescGroupVar">
+    <Prompt>visualizationS2</Prompt>
+    <DialogControl Type="Text" Name="DescTextVar">
+      <Prompt>%&lt;MaskDescription&gt;</Prompt>
+    </DialogControl>
+    <DialogControl Type="Hyperlink" Name="SourceCodeLink">
+      <Prompt>Source code</Prompt>
+      <Callback>edit(&apos;visualizationS2&apos;);</Callback>
+    </DialogControl>
+  </DialogControl>
+  <DialogControl Type="Group" Name="SectionGroup0_Section1">
+    <Prompt>Simulink:studio:ToolBarParametersMenu</Prompt>
+    <ControlOptions AlignPrompts="on"/>
+    <DialogControl Type="Edit" Name="range">
+      <Prompt>V2X Range:</Prompt>
+      <ControlOptions PromptLocation="left"/>
+    </DialogControl>
+    <DialogControl Type="Edit" Name="SF_std">
+      <Prompt>Shadow Fading std:</Prompt>
+    </DialogControl>
+    <DialogControl Type="CheckBox" Name="TrafficLightDisp">
+      <Prompt>Enable Traffic Light Visualization</Prompt>
+    </DialogControl>
+    <DialogControl Type="CheckBox" Name="EnableVisualization">
+      <Prompt>Enable Visualization</Prompt>
+    </DialogControl>
+  </DialogControl>
+  <DialogControl Type="Panel" Name="SectionGroup0_Section2">
+    <ControlOptions Visible="off" AlignPrompts="on"/>
+    <DialogControl Type="Popup" Name="SimulateUsing">
+      <Prompt>Simulate using:</Prompt>
+      <Tooltip>SystemBlock:MATLABSystem:SimulateUsingDescription</Tooltip>
+      <ControlOptions PromptLocation="left"/>
+    </DialogControl>
+  </DialogControl>
+</Mask>
