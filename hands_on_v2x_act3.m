@@ -99,8 +99,10 @@ N = length(residuals);
 sigma_SF = sqrt(sum(residuals.^2) / (N - 1));
 
 % R^2 for regression (no interceptor)
+%y_mean = mean(y);
 SS_res = sum(residuals.^2);
 SS_tot = sum(y.^2);
+%SS_tot = sum((y - y_mean).^2);
 R2_no_intercept = 1 - SS_res / SS_tot;
 
 % Alternative regression with interceptor (comparison purpose)
@@ -122,19 +124,14 @@ fprintf('sigma_SF (with intercept, dof N-2) = %.4f dB\n', sigma_SF_intercept);
 
 % Plots
 figure;
-subplot(2,1,1);
-scatter(x, y, 30, 'filled'); hold on;
+scatter(d, y, 30, 'filled'); hold on;
 xx = linspace(min(x), max(x), 100);
-plot(xx, n_hat*xx, 'r-', 'LineWidth', 1.8); % CI no-intercept fit
-plot(xx, n_with_intercept*xx + a_est, 'g--', 'LineWidth', 1.2); % with intercept
+d_fit = 10.^(xx/10);                          % convertir xx->d en metros
+plot(d_fit, n_hat*xx, 'r-', 'LineWidth', 1.8); % CI no-intercept fit
+plot(d_fit, n_with_intercept*xx + a_est, 'g--', 'LineWidth', 1.2); % with intercept
 legend('Datos (y vs x)','Fit CI (no intercept)','Fit con intercepto','Location','best');
-xlabel('10 log_{10}(d)'); ylabel('PL - FSPL(1m) (dB)');
+xlabel('Distance d (m)'); ylabel('PL - FSPL(1m) (dB)');
 title('Ajuste del modelo CI: y = 10 n log10(d)');
-
-subplot(2,1,2);
-histogram(residuals, 20);
-xlabel('Residuales r_i (dB)'); ylabel('Frecuencia');
-title(sprintf('Residuales (sigma = %.3f dB)', sigma_SF));
 grid on;
 
 % Shadow fading
@@ -168,7 +165,7 @@ grid on;
 
 
 % Viable range of communications
-Pt = 20;    % dBm
+Pt = 20;    % Assuming a new Power Transmission of 20 dBm
 FSPL_1m;    % dB
 n = n_hat;  % PLE
 sigma_SF;   % dB
@@ -257,3 +254,58 @@ set(gca,'FontSize',11);
 %grid on;
 %set(gca,'FontSize',11);
 
+% Communication Range and SF
+Pt_com_range = 18;  % Assuming a new Power Transmission of 18 dBm
+n = n_hat;          % PLE
+Pnoise = -85;       % Assuming noise level of -85 dBm
+
+fprintf('\n\n------- Rango Viable de Comunicacion -------\n\n')
+fprintf('Potencia de Transmision (Pt) = %.3f dBm\nFSPL(1m) = %.3f dB\n', Pt_com_range, FSPL_1m);
+fprintf('PLE (n) = %.3f\nSigma SF (σ_SF) = %.3f dB\n', n, sigma_SF);
+fprintf('Noise level (dBm) = %.3f\n', Pnoise)
+distance_at_noise = 10^((Pt_com_range - FSPL_1m - Pnoise) / (10 * n));
+max_distance = 10^((Pt - FSPL_1m - (Pnoise + 20)) / (10 * n));
+fprintf('distance_at_noise = %.3fm\n', distance_at_noise)
+fprintf('max viable distance (20dB > noise) = %.3fm\n', max_distance)
+
+% Distance vector from 1m to 200m
+d = linspace(1,200,2000);   % From 1 m to 200 m using 2000 samples
+
+% Average received power (CI model)
+Pr_mean = Pt_com_range - (FSPL_1m + 10 * n * log10(d));
+
+% Bands +/- sigma
+Pr_upper = Pr_mean + sigma_SF;
+Pr_lower = Pr_mean - sigma_SF;
+
+% Values of interest
+d_points = [1, 10, 50, 100, 200];
+Pr_points = Pt_com_range - (FSPL_1m + 10 * n * log10(d_points));
+Pr_points_upper = Pr_points + sigma_SF;
+Pr_points_lower = Pr_points - sigma_SF;
+
+% Show table in commandl ine
+fprintf(' d (m)   Pr_mean (dBm)   Pr+sigma (dBm)   Pr-sigma (dBm)\n');
+for k = 1:length(d_points)
+    fprintf('%5d   %10.3f       %10.3f       %10.3f\n', d_points(k), ...
+        Pr_points(k), Pr_points_upper(k), Pr_points_lower(k));
+end
+
+% Get Plot
+figure('Name','Pr(d) - Modelo CI');
+plot(d, Pr_mean, 'b-', 'LineWidth', 1.8); hold on;
+plot(d, Pr_upper, 'r--', 'LineWidth', 1);
+plot(d, Pr_lower, 'r--', 'LineWidth', 1);
+% Get Distance below the Noise level
+xline(distance_at_noise, 'k:', 'LineWidth', 1.4, 'Label', 'Distance below Noise', 'LabelHorizontalAlignment','left');
+text(distance_at_noise + 1, Pnoise - 1, sprintf('d(noise)= %.3f m', distance_at_noise),'FontWeight', 'bold');
+xline(max_distance, 'k:', 'LineWidth', 1.4, 'Label', 'Max Viable distance', 'LabelHorizontalAlignment','left');
+text(max_distance + 1, Pnoise + 20 - 1, sprintf('d(max)= %.3f m', max_distance),'FontWeight', 'bold');
+yline(Pnoise, 'k--', 'LineWidth', 1.4, 'Label', 'Noise value', 'LabelVerticalAlignment','top');
+text(10, Pnoise - 1, sprintf('Pr(noise)= %.3f m', Pnoise),'FontWeight', 'bold');
+xlabel('Distancia d (m)');
+ylabel('Potencia recibida P_r (dBm)');
+title('P_r(d) (media) y bandas \pm\sigma_{SF} (modelo CI)');
+legend('P_r media','P_r + \sigma','P_r - \sigma','Location','best');
+grid on;
+set(gca,'FontSize',11);
