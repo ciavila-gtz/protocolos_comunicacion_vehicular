@@ -147,9 +147,23 @@ load('SCRIPTS/PARKING_INF/PV2I.mat')
 routePlan{1, "StartPose"} = [47.89, 25.94, 180];
 routePlan{1, "EndPose"}   = [15.0, 40.0, 210];
 
+% Planeador local, utilizando RRT de matlab
+motionPlanner = pathPlannerRRT(costmap, ...
+        'ConnectionDistance', RRTConnectionDistance, ...
+        'MinIterations',      1000, ...
+        'GoalTolerance',      [0.5 0.5 10], ...
+        'MinTurningRadius',   minTurningRadius);
+
 % Segmento 2
 routePlan{2, "StartPose"} = [15.0, 40.0, 210];
 routePlan{2, "EndPose"}   = [16.42, 5.18, 270];
+
+% Planeador local, utilizando RRT de matlab
+motionPlanner = pathPlannerRRT(costmap, ...
+        'ConnectionDistance', RRTConnectionDistance, ...
+        'MinIterations',      1000, ...
+        'GoalTolerance',      [0.5 0.5 10], ...
+        'MinTurningRadius',   minTurningRadius);
 
 % Segmento 3
 %routePlan{3, "StartPose"} = [40.0, 15.0, 210];
@@ -163,7 +177,7 @@ routePlan{2, "EndPose"}   = [16.42, 5.18, 270];
 % de fila en la tabla routePlan para probar cada segmento y verificar que
 % el planificador encuentre una trayectoria posible.
 
-segment=1;  % segmento a calcular (fila)
+segment=2;  % segmento a calcular (fila)
 
 startPose = routePlan{segment, "StartPose"}; % pose inicial [meters, meters, degrees]
 goalPose  = routePlan{segment, "EndPose"};  % pose final
@@ -188,7 +202,7 @@ hold on
 helperPlotVehicle(startPose, vehicleDims, DisplayName="Current Pose")
 legend(Location="northwest")
 
-for n = 1 : height(routePlan)
+for n = 2.413 : height(routePlan)
     % Resto del plan
     vehiclePose = routePlan{n, "EndPose"};
     
@@ -372,8 +386,8 @@ open_system("MODEL_PV/Vehicle Control/Parking System");
 
 load('SCRIPTS/PARKING_INF/PV2I.mat')
 modelName = 'MODEL_PV';
-setup_01(ScenarioFcnName="scenario_final", Range=10);  % Range= rango 
-SF_std=6;         % desviación estándar del Shadow Fading
+setup_01(ScenarioFcnName="scenario_final", Range=53);  % Range= rango 
+SF_std=5.08;         % desviación estándar del Shadow Fading
 mpcverbosity("off");
 out=sim(modelName);
 
